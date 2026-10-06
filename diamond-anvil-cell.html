@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diamond Anvil Cell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1D253F; --gold:#D9AD5A; --cream:#F3EFE7; --ink:#1D253F;
+    --muted:#6B6F7E; --line:#E4DED2; --teal:#2E8B7A; --orange:#D9733A; --red:#B8322A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--cream);font-family:'Nunito',sans-serif;color:var(--ink)}
+  #wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  #stage{width:1280px;height:720px;position:relative;background:var(--cream);transform-origin:center center;flex:none}
+
+  header{height:84px;background:var(--navy);padding:16px 28px 0;position:relative}
+  header h1{color:#fff;font-size:26px;font-weight:800;letter-spacing:.2px}
+  header .rule{width:110px;height:4px;background:var(--gold);border-radius:2px;margin:6px 0 6px}
+  header p{color:#D8DCE8;font-size:14px}
+  #dirBtn{position:absolute;right:28px;top:24px;background:var(--gold);color:var(--navy);border:0;border-radius:8px;
+    font:800 17px 'Nunito',sans-serif;padding:8px 20px;cursor:pointer}
+
+  main{display:grid;grid-template-columns:400px 380px 420px;gap:18px;padding:16px 22px 0;height:600px}
+  .col{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .card{background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(29,37,63,.08);padding:14px 16px}
+  .ch{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .badge{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
+  .badge svg{width:17px;height:17px}
+  .ch h2{font-size:14px;font-weight:800;letter-spacing:1px;text-transform:uppercase}
+  .b-gold{background:#FBF1DD}.b-teal{background:#DDF0EC}.b-orange{background:#FBE6DA}.b-navy{background:#E3E6EF}
+
+  #cellCard{flex:1;display:flex;flex-direction:column}
+  #cellSvg{width:100%;flex:1}
+  .readouts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  .ro{background:var(--cream);border-radius:10px;padding:8px 12px}
+  .ro .k{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+  .ro .v{font-size:24px;font-weight:800}
+
+  .label{font-size:13px;font-weight:700;color:var(--muted);margin:2px 0 6px}
+  .tips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+  .tip{border:2px solid var(--line);background:#fff;border-radius:9px;padding:6px 0;font:700 14px 'Nunito',sans-serif;cursor:pointer;color:var(--ink)}
+  .tip.on{border-color:var(--teal);background:#DDF0EC}
+  .tip:disabled{opacity:.45;cursor:not-allowed}
+  input[type=range]{width:100%;accent-color:var(--teal);height:22px;cursor:pointer}
+  input[type=range]:disabled{cursor:not-allowed;opacity:.45}
+  .sliderRow{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:600}
+  .big{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px}
+  .big span:first-child{font-size:13px;font-weight:700;color:var(--muted)}
+  .big b{font-size:22px;font-weight:800}
+  .note{font-size:12.5px;color:var(--muted);margin-top:8px;min-height:18px}
+  .note.warn{color:var(--orange);font-weight:700}
+
+  #heatCard input[type=range]{accent-color:var(--orange)}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+  .step{border:0;border-radius:9px;padding:8px 0;font:800 14px 'Nunito',sans-serif;cursor:pointer;background:var(--cream);color:var(--ink)}
+  .step:hover{background:#E9E2D4}
+  .wide{width:100%;margin-top:10px;border:2px solid var(--navy);background:#fff;color:var(--navy);border-radius:9px;
+    padding:8px 0;font:800 14px 'Nunito',sans-serif;cursor:pointer}
+
+  #xray{width:100%;height:210px;border-radius:10px;background:#0E1324;display:block}
+  #status{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+  #status .s{font-size:13px;font-weight:700;color:var(--muted)}
+  #state{font-weight:800;font-size:15px;padding:4px 14px;border-radius:20px}
+  .solid{background:#E3E6EF;color:var(--navy)}
+  .liquid{background:#FBE6DA;color:var(--red)}
+
+  #logCard{flex:1;display:flex;flex-direction:column;min-height:0}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{background:var(--navy);color:#fff;font-weight:700;padding:6px 8px;text-align:center;font-size:13px}
+  td{padding:5px 8px;text-align:center;border-bottom:1px solid var(--line);font-weight:600}
+  .tblWrap{flex:1;overflow:auto;min-height:0}
+  .empty td{color:var(--muted);font-weight:600;font-style:italic}
+  .logBtns{display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-top:8px}
+  #recBtn{border:0;border-radius:9px;padding:9px 0;font:800 15px 'Nunito',sans-serif;cursor:pointer;background:var(--teal);color:#fff}
+  #recBtn:disabled{background:#B9C7C4;cursor:not-allowed}
+  #clrBtn{border:2px solid var(--line);border-radius:9px;background:#fff;font:700 14px 'Nunito',sans-serif;cursor:pointer;color:var(--muted)}
+
+  .eq{display:flex;align-items:center;justify-content:space-between;background:var(--cream);border-radius:10px;padding:8px 10px}
+  .eq span{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .eq b{font-size:15px;font-weight:800}
+  .eq .op{font-size:20px;font-weight:800;color:var(--muted)}
+  footer{position:absolute;left:0;right:0;bottom:0;height:36px;display:flex;justify-content:space-between;align-items:center;
+    padding:0 28px;font-size:13px;color:#8A7B5C;font-weight:700}
+
+  #dirOverlay{position:absolute;inset:0;background:rgba(14,19,36,.6);display:none;align-items:center;justify-content:center;z-index:10}
+  #dirOverlay.show{display:flex}
+  .dirBox{background:#fff;border-radius:16px;width:720px;padding:0 0 22px;overflow:hidden;position:relative}
+  .dirBox h3{background:var(--gold);color:var(--navy);font-size:26px;font-weight:800;text-align:center;padding:12px}
+  .dirBox ol{padding:18px 40px 0 64px;font-size:17px;line-height:1.55}
+  .dirBox li{margin-bottom:6px}
+  #dirClose{position:absolute;right:12px;top:10px;width:34px;height:34px;border-radius:50%;border:0;background:var(--navy);color:#fff;font-size:18px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+
+<header>
+  <h1>Diamond Anvil Cell</h1>
+  <div class="rule"></div>
+  <p>Squeeze a tiny iron sample between two diamonds, heat it, and record the temperature at which it melts.</p>
+  <button id="dirBtn">Directions</button>
+</header>
+
+<main>
+  <!-- Column 1: the cell -->
+  <div class="col">
+    <div class="card" id="cellCard">
+      <div class="ch"><div class="badge b-navy"><svg viewBox="0 0 24 24" fill="none" stroke="#1D253F" stroke-width="2.2" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20M9 3l3 18M15 3l-3 18"/></svg></div><h2>Inside the Cell</h2></div>
+      <svg id="cellSvg" viewBox="0 0 360 330" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="readouts">
+        <div class="ro"><div class="k">Pressure</div><div class="v" id="roP">0 GPa</div></div>
+        <div class="ro"><div class="k">Temperature</div><div class="v" id="roT">25&deg;C</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Column 2: controls -->
+  <div class="col">
+    <div class="card" id="squeezeCard">
+      <div class="ch"><div class="badge b-teal"><svg viewBox="0 0 24 24" fill="none" stroke="#2E8B7A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v7M9 6l3 3 3-3M12 22v-7M9 18l3-3 3 3M4 12h16"/></svg></div><h2>Step 1 &middot; Squeeze</h2></div>
+      <div class="label">Diamond tip size</div>
+      <div class="tips" id="tips"></div>
+      <div class="label">Force</div>
+      <input type="range" id="force" min="0" max="450" step="5" value="0">
+      <div class="sliderRow"><span>0 N</span><span>450 N</span></div>
+<b id="fOut" hidden></b>
+      <div class="note" id="sqNote">A smaller tip spreads the same force over a smaller area.</div>
+    </div>
+
+    <div class="card" id="heatCard">
+      <div class="ch"><div class="badge b-orange"><svg viewBox="0 0 24 24" fill="none" stroke="#D9733A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V4a2 2 0 0 0-4 0v10.8a4 4 0 1 0 4 0z"/></svg></div><h2>Step 2 &middot; Heat</h2></div>
+      <div class="label">Sample temperature</div>
+      <input type="range" id="temp" min="25" max="6000" step="5" value="25">
+      <div class="sliderRow"><span>25&deg;C</span><span>6,000&deg;C</span></div>
+      <div class="steps">
+        <button class="step" data-d="-100">&minus;100</button>
+        <button class="step" data-d="-10">&minus;10</button>
+        <button class="step" data-d="10">+10</button>
+        <button class="step" data-d="100">+100</button>
+      </div>
+      <button class="wide" id="resetBtn">Reset Sample</button>
+    </div>
+    <div class="card" id="mathCard">
+      <div class="ch"><div class="badge b-gold"><svg viewBox="0 0 24 24" fill="none" stroke="#B88A2E" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M12 5v0M12 19v0"/><circle cx="12" cy="6" r="1.3" fill="#B88A2E"/><circle cx="12" cy="18" r="1.3" fill="#B88A2E"/></svg></div><h2>Pressure = Force &divide; Area</h2></div>
+      <div class="eq"><div><span>Force</span><b id="eqF">0 N</b></div><div class="op">&divide;</div><div><span>Tip area</span><b id="eqA">0</b></div><div class="op">=</div><div><span>Pressure</span><b id="eqP">0 GPa</b></div></div>
+    </div>
+  </div>
+
+  <!-- Column 3: detector + log -->
+  <div class="col">
+    <div class="card">
+      <div class="ch"><div class="badge b-gold"><svg viewBox="0 0 24 24" fill="none" stroke="#B88A2E" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="#B88A2E"/></svg></div><h2>Step 3 &middot; X-ray Detector</h2></div>
+      <canvas id="xray" width="776" height="420"></canvas>
+      <div id="status"><span class="s">Iron sample is</span><span id="state" class="solid">SOLID</span></div>
+    </div>
+    <div class="card" id="logCard">
+      <div class="ch"><div class="badge b-navy"><svg viewBox="0 0 24 24" fill="none" stroke="#1D253F" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><h2>Data Log</h2></div>
+      <div class="tblWrap">
+        <table>
+          <thead><tr><th>Trial</th><th>Pressure (GPa)</th><th>Melting Temperature (&deg;C)</th></tr></thead>
+          <tbody id="log"><tr class="empty"><td colspan="3">No trials recorded yet</td></tr></tbody>
+        </table>
+      </div>
+      <div class="logBtns">
+        <button id="recBtn" disabled>Record Melting Point</button>
+        <button id="clrBtn">Clear</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer><span>Upside Down Learning</span><span>Melting data based on Sinmyo, Hirose &amp; Ohishi (2019)</span></footer>
+
+<div id="dirOverlay">
+  <div class="dirBox">
+    <button id="dirClose" aria-label="Close">&times;</button>
+    <h3>Directions</h3>
+    <ol>
+      <li>Choose a diamond tip size, then drag the force slider to set the pressure.</li>
+      <li>Raise the temperature slowly. Use the +10 button as you get close.</li>
+      <li>Watch the X-ray detector. When the sharp rings disappear, the iron has melted.</li>
+      <li>Click <b>Record Melting Point</b>.</li>
+      <li>Click <b>Reset Sample</b>, set a new pressure, and repeat. Record at least five trials at different pressures.</li>
+      <li>Complete Explore 4 in your Investigation Journal.</li>
+    </ol>
+  </div>
+</div>
+
+</div></div>
+
+<script>
+(function(){
+  // ---------- scaling ----------
+  const stage=document.getElementById('stage');
+  function fit(){
+    const s=Math.min(window.innerWidth/1280, window.innerHeight/720);
+    stage.style.transform='scale('+s+')';
+  }
+  window.addEventListener('resize',fit); fit();
+
+  // ---------- model ----------
+  // Melting curve of iron: Simon-Glatzel fit Tm = 1822.88 K * (1 + P/32.51)^0.4644,
+  // consistent with Sinmyo et al. (2019), 5500 +/- 220 K at 330 GPa.
+  function meltC(P){ return 1822.88*Math.pow(1+P/32.51,0.4644)-273.15; }
+  const TIPS=[200,100,60,45]; // culet diameters, micrometers
+  const MAXP=290;             // highest pressure reached in the experiments
+  let tip=200, force=0, T=25, log=[];
+
+  function pressure(){
+    const r=tip/2*1e-6, A=Math.PI*r*r;
+    return Math.min(MAXP, force/A/1e9);
+  }
+  function melted(){ return T>=meltC(pressure()); }
+
+  // ---------- UI refs ----------
+  const $=id=>document.getElementById(id);
+  const tipsEl=$('tips'), forceEl=$('force'), tempEl=$('temp');
+
+  TIPS.forEach(d=>{
+    const b=document.createElement('button');
+    b.className='tip'+(d===tip?' on':''); b.textContent=d+' µm'; b.dataset.d=d;
+    b.onclick=()=>{ if(T>25) return; tip=d; update(); };
+    tipsEl.appendChild(b);
+  });
+  forceEl.oninput=()=>{ force=+forceEl.value; update(); };
+  tempEl.oninput=()=>{ T=+tempEl.value; update(); };
+  document.querySelectorAll('.step').forEach(b=>b.onclick=()=>{
+    T=Math.max(25,Math.min(6000,T+ +b.dataset.d)); update();
+  });
+  $('resetBtn').onclick=()=>{ T=25; update(); };
+  $('recBtn').onclick=()=>{
+    if(!melted()) return;
+    log.push({P:Math.round(pressure()), T:Math.round(T)}); renderLog(); update();
+  };
+  $('clrBtn').onclick=()=>{ log=[]; renderLog(); };
+  $('dirBtn').onclick=()=>$('dirOverlay').classList.add('show');
+  $('dirClose').onclick=()=>$('dirOverlay').classList.remove('show');
+  $('dirOverlay').onclick=e=>{ if(e.target.id==='dirOverlay') $('dirOverlay').classList.remove('show'); };
+
+  function fmt(n){ return Math.round(n).toLocaleString('en-US'); }
+
+  function renderLog(){
+    const tb=$('log');
+    if(!log.length){ tb.innerHTML='<tr class="empty"><td colspan="3">No trials recorded yet</td></tr>'; return; }
+    tb.innerHTML=log.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+fmt(r.P)+'</td><td>'+fmt(r.T)+'</td></tr>').join('');
+    const w=tb.closest('.tblWrap'); w.scrollTop=w.scrollHeight;
+  }
+
+  // ---------- cell drawing ----------
+  const NS='http://www.w3.org/2000/svg';
+  const svg=$('cellSvg');
+  function tempColor(t){
+    // dark iron -> red -> orange -> yellow -> white
+    const stops=[[25,[90,92,100]],[700,[150,40,30]],[1500,[220,70,30]],[2800,[245,150,40]],[4200,[255,220,120]],[6000,[255,252,235]]];
+    for(let i=1;i<stops.length;i++){
+      if(t<=stops[i][0]){
+        const a=stops[i-1],b=stops[i],f=(t-a[0])/(b[0]-a[0]);
+        const c=a[1].map((v,k)=>Math.round(v+(b[1][k]-v)*f));
+        return 'rgb('+c.join(',')+')';
+      }
+    }
+    return 'rgb(255,252,235)';
+  }
+  function drawCell(){
+    const P=pressure(), cx=180, cy=168;
+    const culet=10+ (tip/200)*36;            // drawn culet width
+    const gap=10;
+    let s='';
+    s+='<defs><linearGradient id="dg" x1="0" x2="1"><stop offset="0" stop-color="#BFE6F5"/><stop offset=".5" stop-color="#EAF8FD"/><stop offset="1" stop-color="#9FD6EC"/></linearGradient>'+
+       '<radialGradient id="glow"><stop offset="0" stop-color="'+tempColor(T)+'" stop-opacity=".9"/><stop offset="1" stop-color="'+tempColor(T)+'" stop-opacity="0"/></radialGradient></defs>';
+    // top diamond
+    const t0=cy-gap/2-108, t1=cy-gap/2;
+    s+='<polygon points="'+(cx-95)+','+t0+' '+(cx+95)+','+t0+' '+(cx+115)+','+(t0+26)+' '+(cx+culet/2)+','+t1+' '+(cx-culet/2)+','+t1+' '+(cx-115)+','+(t0+26)+'" fill="url(#dg)" stroke="#5FA9C6" stroke-width="2"/>';
+    s+='<line x1="'+(cx-115)+'" y1="'+(t0+26)+'" x2="'+(cx+115)+'" y2="'+(t0+26)+'" stroke="#5FA9C6" stroke-width="1.5"/>';
+    // bottom diamond
+    const b0=cy+gap/2, b1=cy+gap/2+108;
+    s+='<polygon points="'+(cx-culet/2)+','+b0+' '+(cx+culet/2)+','+b0+' '+(cx+115)+','+(b1-26)+' '+(cx+95)+','+b1+' '+(cx-95)+','+b1+' '+(cx-115)+','+(b1-26)+'" fill="url(#dg)" stroke="#5FA9C6" stroke-width="2"/>';
+    s+='<line x1="'+(cx-115)+'" y1="'+(b1-26)+'" x2="'+(cx+115)+'" y2="'+(b1-26)+'" stroke="#5FA9C6" stroke-width="1.5"/>';
+    // gasket
+    s+='<rect x="'+(cx-150)+'" y="'+(cy-gap/2)+'" width="'+(150-culet/2-2)+'" height="'+gap+'" fill="#8C8F99"/>';
+    s+='<rect x="'+(cx+culet/2+2)+'" y="'+(cy-gap/2)+'" width="'+(150-culet/2-2)+'" height="'+gap+'" fill="#8C8F99"/>';
+    // sample glow + sample
+    if(T>400) s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(18+T/200)+'" fill="url(#glow)"/>';
+    s+='<rect x="'+(cx-culet/2+3)+'" y="'+(cy-gap/2+1)+'" width="'+(culet-6)+'" height="'+(gap-2)+'" rx="2" fill="'+tempColor(T)+'"/>';
+    // heating beam
+    if(T>25){
+      const op=Math.min(1,.35+T/4000);
+      s+='<line x1="8" y1="'+(cy-46)+'" x2="'+(cx-4)+'" y2="'+(cy-3)+'" stroke="#E8622C" stroke-width="3" opacity="'+op+'"/>';
+      s+='<text x="10" y="'+(cy-54)+'" font-family="Nunito, sans-serif" font-weight="700" font-size="12" fill="#D9733A">Heating</text>';
+    }
+    // x-ray beam
+    s+='<line x1="'+(cx+4)+'" y1="'+cy+'" x2="352" y2="'+cy+'" stroke="#B88A2E" stroke-width="2" stroke-dasharray="5 4"/>';
+    s+='<text x="352" y="'+(cy+20)+'" text-anchor="end" font-family="Nunito, sans-serif" font-weight="700" font-size="12" fill="#B88A2E">X-rays</text>';
+    // force arrows
+    const L=10+ (force/450)*34;
+    const arrow=(y,dir)=>{
+      const y2=y+dir*L;
+      return '<line x1="'+cx+'" y1="'+y+'" x2="'+cx+'" y2="'+y2+'" stroke="#D9733A" stroke-width="7" stroke-linecap="round"/>'+
+             '<polygon points="'+(cx-11)+','+(y2)+' '+(cx+11)+','+(y2)+' '+cx+','+(y2+dir*14)+'" fill="#D9733A"/>';
+    };
+    if(force>0){ s+=arrow(t0-58,1); s+=arrow(b1+58,-1); }
+    s+='<text x="'+(cx+20)+'" y="16" font-family="Nunito, sans-serif" font-weight="700" font-size="12" fill="#6B6F7E">Force</text>';
+    // labels
+    s+='<text x="'+(cx-130)+'" y="'+(t0+16)+'" font-family="Nunito, sans-serif" font-weight="700" font-size="12" fill="#1D253F">Diamond</text>';
+    s+='<text x="'+(cx-150)+'" y="'+(cy+28)+'" font-family="Nunito, sans-serif" font-weight="700" font-size="12" fill="#6B6F7E">Metal gasket</text>';
+    s+='<text x="'+(cx+70)+'" y="'+(cy-14)+'" font-family="Nunito, sans-serif" font-weight="700" font-size="12" fill="#1D253F">Iron sample</text>';
+    s+='<line x1="'+(cx+68)+'" y1="'+(cy-17)+'" x2="'+(cx+culet/2)+'" y2="'+(cy-3)+'" stroke="#1D253F" stroke-width="1"/>';
+    svg.innerHTML=s;
+  }
+
+  // ---------- x-ray detector ----------
+  const cv=$('xray'), ctx=cv.getContext('2d');
+  // fixed random spot field so the pattern does not flicker
+  const spots=[]; (function(){ let seed=7; const r=()=>{seed=(seed*16807)%2147483647; return seed/2147483647;};
+    const rings=[70,98,122,150,176];
+    rings.forEach((R,i)=>{ for(let k=0;k<70;k++){ spots.push({R:R+ (r()-.5)*2, a:r()*Math.PI*2, b:.4+r()*.6, ring:i}); } });
+  })();
+  function drawXray(){
+    const W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+    ctx.fillStyle='#0E1324'; ctx.fillRect(0,0,W,H);
+    const P=pressure(); const shrink=1-Math.min(P,290)/290*0.12; // rings shift slightly with compression
+    // beam stop
+    if(!melted()){
+      const rings=[70,98,122,150,176];
+      rings.forEach((R0,i)=>{
+        const R=R0/shrink*1.0;
+        ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+        ctx.strokeStyle='rgba(240,214,140,'+(i%2?0.55:0.8)+')'; ctx.lineWidth=2.2; ctx.stroke();
+      });
+      spots.forEach(s=>{
+        const R=s.R/shrink, x=cx+R*Math.cos(s.a), y=cy+R*Math.sin(s.a);
+        ctx.fillStyle='rgba(255,236,170,'+s.b+')'; ctx.beginPath(); ctx.arc(x,y,2.4,0,Math.PI*2); ctx.fill();
+      });
+    } else {
+      // diffuse liquid halos
+      [[105,40,.55],[175,34,.28]].forEach(([R,w,a])=>{
+        const g=ctx.createRadialGradient(cx,cy,Math.max(0,R/shrink-w),cx,cy,R/shrink+w);
+        g.addColorStop(0,'rgba(240,180,110,0)'); g.addColorStop(.5,'rgba(240,180,110,'+a+')'); g.addColorStop(1,'rgba(240,180,110,0)');
+        ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      });
+    }
+    ctx.fillStyle='#2A3352'; ctx.beginPath(); ctx.arc(cx,cy,26,0,Math.PI*2); ctx.fill();
+    ctx.font='700 22px Nunito, sans-serif'; ctx.fillStyle='rgba(216,220,232,.8)';
+    ctx.fillText(melted()?'Diffuse glow: no sharp rings':'Sharp rings: crystal structure', 22, H-22);
+  }
+
+  // ---------- update ----------
+  function update(){
+    const hot=T>25;
+    document.querySelectorAll('.tip').forEach(b=>{ b.classList.toggle('on',+b.dataset.d===tip); b.disabled=hot && +b.dataset.d!==tip; });
+    forceEl.disabled=hot;
+    forceEl.value=force; tempEl.value=T;
+    const P=pressure();
+    $('fOut').textContent=force+' N';
+    const areaUm=Math.PI*Math.pow(tip/2,2);
+    $('eqF').textContent=force+' N';
+    $('eqA').innerHTML=fmt(areaUm)+' &micro;m&sup2;';
+    $('eqP').textContent=fmt(P)+' GPa';
+    $('roP').textContent=fmt(P)+' GPa';
+    $('roT').innerHTML=fmt(T)+'&deg;C';
+    const n=$('sqNote');
+    if(hot){ n.textContent='Reset the sample to change the pressure.'; n.className='note warn'; }
+    else if(P>=MAXP && force>0){ n.textContent='290 GPa is the highest pressure these experiments reached.'; n.className='note warn'; }
+    else { n.textContent='A smaller tip spreads the same force over a smaller area.'; n.className='note'; }
+    const m=melted();
+    const st=$('state'); st.textContent=m?'LIQUID':'SOLID'; st.className=m?'liquid':'solid';
+    $('recBtn').disabled=!m;
+    drawCell(); drawXray();
+  }
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(update);
+  update();
+})();
+</script>
+</body>
+</html>
